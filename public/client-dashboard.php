@@ -19,6 +19,19 @@ $requests = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
 $activePage = '';
+
+function request_status_badge(string $status): string
+{
+    $map = [
+        'new' => ['Новая', 'badge badge--new'],
+        'in_progress' => ['В работе', 'badge badge--in-progress'],
+        'completed' => ['Завершена', 'badge badge--completed'],
+        'cancelled' => ['Отменена', 'badge badge--cancelled'],
+    ];
+    $label = $map[$status][0] ?? $status;
+    $class = $map[$status][1] ?? 'badge';
+    return '<span class="' . $class . '">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span>';
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -68,8 +81,8 @@ $activePage = '';
                             <?php foreach ($requests as $r): ?>
                                 <tr>
                                     <td><?php echo (int)$r['id']; ?></td>
-                                    <td><?php echo htmlspecialchars($r['status'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td><?php echo htmlspecialchars($r['created_at'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo request_status_badge($r['status']); ?></td>
+                                    <td><?php echo htmlspecialchars(substr($r['created_at'] ?? '', 0, 16), ENT_QUOTES, 'UTF-8'); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                             </tbody>

@@ -13,7 +13,7 @@ if (!isset($activePage)) {
 ?>
 <header class="site-header">
     <div class="container header-inner">
-        <div class="logo">Юркрас</div>
+        <div class="logo"><a href="index.php">Юркрас</a></div>
         <nav class="main-nav">
             <a href="index.php" class="<?php echo ($activePage === 'home') ? 'active' : ''; ?>">Главная</a>
             <a href="services.php" class="<?php echo ($activePage === 'services') ? 'active' : ''; ?>">Услуги</a>

@@ -4,6 +4,7 @@ let currentSessionId = null;
 let lastMessageId = 0;
 let pollTimerId = null;
 let currentStatus = null;
+let closedNoticeShown = false;
 
 const chatMessagesEl = document.getElementById('chatMessages');
 const chatInputEl = document.getElementById('chatInput');
@@ -11,6 +12,22 @@ const chatSendBtnEl = document.getElementById('chatSendBtn');
 const quickActionsEl = document.getElementById('quickActions');
 const requestConsultantBtnEl = document.getElementById('requestConsultantBtn');
 const chatModeLabelEl = document.getElementById('chatModeLabel');
+
+function setChatModeBadge(status) {
+    if (!chatModeLabelEl) return;
+    const map = {
+        bot: { text: 'Бот', cls: 'badge badge--bot' },
+        waiting_for_consultant: { text: 'Ожидание консультанта', cls: 'badge badge--waiting' },
+        consultant_connected: { text: 'Живой консультант', cls: 'badge badge--connected' },
+        closed: { text: 'Диалог завершён', cls: 'badge badge--closed' }
+    };
+    const item = map[status] || { text: 'Режим', cls: 'badge' };
+    chatModeLabelEl.textContent = item.text;
+    chatModeLabelEl.className = item.cls;
+}
+
+// Начальный режим до первого ответа сервера
+setChatModeBadge('bot');
 
 function appendMessage(text, type, options = {}) {
     const div = document.createElement('div');
@@ -73,11 +90,7 @@ async function fetchNewMessages() {
 
         const status = data.status || null;
         currentStatus = status;
-        if (chatModeLabelEl && status) {
-            if (status === 'waiting_for_consultant') chatModeLabelEl.textContent = 'Режим: ожидание консультанта';
-            if (status === 'consultant_connected') chatModeLabelEl.textContent = 'Режим: живой консультант';
-            if (status === 'closed') chatModeLabelEl.textContent = 'Режим: диалог завершён';
-        }
+        if (status) setChatModeBadge(status);
 
         const msgs = Array.isArray(data.messages) ? data.messages : [];
         for (const m of msgs) {
@@ -93,6 +106,10 @@ async function fetchNewMessages() {
                 btns.forEach((b) => {
                     b.disabled = true;
                 });
+            }
+            if (!closedNoticeShown) {
+                closedNoticeShown = true;
+                appendMessage('Диалог завершён. Вы можете оставить заявку через раздел «Контакты» или посмотреть услуги.', 'bot');
             }
         }
     } catch (e) {
@@ -129,9 +146,7 @@ async function requestConsultant() {
 
         currentSessionId = data.session_id || currentSessionId;
         ensurePolling();
-        if (chatModeLabelEl) {
-            chatModeLabelEl.textContent = 'Режим: ожидание консультанта';
-        }
+        setChatModeBadge('waiting_for_consultant');
         appendMessage(data.bot_message || 'Запрос консультанту отправлен.', 'bot');
     } catch (e) {
         appendMessage('Не удалось связаться с сервером. Проверьте работу Apache/PHP.', 'bot');
@@ -178,9 +193,7 @@ async function sendMessage() {
         currentSessionId = data.session_id || currentSessionId;
         lastMessageId = 0; // после первой инициализации начнём подтягивать всё, что могло прийти
         ensurePolling();
-        if (chatModeLabelEl && data.mode === 'waiting_for_consultant') {
-            chatModeLabelEl.textContent = 'Режим: ожидание консультанта';
-        }
+        if (data.mode === 'waiting_for_consultant') setChatModeBadge('waiting_for_consultant');
 
         let botText = data.bot_message || 'Ответ не получен.';
         appendMessage(botText, 'bot', { serviceLink: data.service_link || null });

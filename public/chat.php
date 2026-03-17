@@ -137,7 +137,7 @@ $activePage = '';
                                 <a href="contacts.php">Оставить заявку</a>
                             </div>
                         </div>
-                        <small id="chatModeLabel">Режим: бот</small>
+                        <div id="chatModeLabel" class="badge badge--bot">Бот</div>
                     </div>
                     <div class="chat-messages" id="chatMessages">
                         <div class="chat-message bot">

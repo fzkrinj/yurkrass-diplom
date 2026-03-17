@@ -36,6 +36,32 @@ $waitingSessions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
 $activePage = '';
+
+function request_status_badge(string $status): string
+{
+    $map = [
+        'new' => ['Новая', 'badge badge--new'],
+        'in_progress' => ['В работе', 'badge badge--in-progress'],
+        'completed' => ['Завершена', 'badge badge--completed'],
+        'cancelled' => ['Отменена', 'badge badge--cancelled'],
+    ];
+    $label = $map[$status][0] ?? $status;
+    $class = $map[$status][1] ?? 'badge';
+    return '<span class="' . $class . '">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span>';
+}
+
+function chat_status_badge(string $status): string
+{
+    $map = [
+        'bot' => ['Бот', 'badge badge--bot'],
+        'waiting_for_consultant' => ['Ожидает консультанта', 'badge badge--waiting'],
+        'consultant_connected' => ['Консультант на связи', 'badge badge--connected'],
+        'closed' => ['Закрыт', 'badge badge--closed'],
+    ];
+    $label = $map[$status][0] ?? $status;
+    $class = $map[$status][1] ?? 'badge';
+    return '<span class="' . $class . '">' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . '</span>';
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -81,9 +107,9 @@ $activePage = '';
                                     <td><?php echo (int)$r['id']; ?></td>
                                     <td><?php echo htmlspecialchars($r['name'] ?? '—', ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td><?php echo htmlspecialchars($r['phone'] ?? '—', ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td><?php echo htmlspecialchars($r['status'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo request_status_badge($r['status']); ?></td>
                                     <td><?php echo nl2br(htmlspecialchars($r['comment'] ?? '—', ENT_QUOTES, 'UTF-8')); ?></td>
-                                    <td><?php echo htmlspecialchars($r['created_at'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars(substr($r['created_at'] ?? '', 0, 16), ENT_QUOTES, 'UTF-8'); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                             </tbody>
@@ -143,8 +169,8 @@ $activePage = '';
                                 <tr>
                                     <td><?php echo (int)$s['id']; ?></td>
                                     <td><?php echo htmlspecialchars($s['full_name'] ?? 'Гость', ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td><?php echo htmlspecialchars($s['status'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td><?php echo htmlspecialchars($s['created_at'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo chat_status_badge($s['status']); ?></td>
+                                    <td><?php echo htmlspecialchars(substr($s['created_at'] ?? '', 0, 16), ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td>
                                         <a class="btn btn-outline" href="consultant-chat.php?session_id=<?php echo (int)$s['id']; ?>">Открыть чат</a>
                                     </td>
