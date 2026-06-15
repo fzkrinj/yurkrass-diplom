@@ -1,0 +1,14 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# PHP / cache
+*.cache
+*.tmp
+
+# Local env files (если появятся)
+.env
+.env.*
